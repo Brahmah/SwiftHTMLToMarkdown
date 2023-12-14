@@ -1,4 +1,5 @@
 import SwiftSoup
+import Foundation
 
 public class BasicHTML: HTML {
     public var rawHTML: String
@@ -93,9 +94,10 @@ public class BasicHTML: HTML {
                 // Try and get the language from the code block
 
                 if let codeClass = try? codeNode.attr("class"),
-                   let match = try? #/lang.*-(\w+)/#.firstMatch(in: codeClass) {
+                   let language = codeClass.regex(pattern: #"lang.*-(\w+)"#).first {
+                   //let match = try? #/lang.*-(\w+)/#.firstMatch(in: codeClass) {
                     // match.output.1 is equal to the second capture group.
-                    let language = match.output.1
+                    //let language = match.output.1
                     markdown += language + "\n"
                 } else {
                     // Add the ending newline that we need to format this correctly.
@@ -119,4 +121,18 @@ public class BasicHTML: HTML {
         }
     }
 
+}
+
+extension String {
+    func regex(pattern: String, options: NSRegularExpression.Options = [.dotMatchesLineSeparators]) -> [String] {
+        do {
+            let string = self as NSString
+            let regex = try NSRegularExpression(pattern: pattern, options: options)
+            let range = NSRange(location: 0, length: string.length)
+            let matches = regex.matches(in: self, range: range)
+            return matches.map { string.substring(with: $0.range) }
+        } catch {
+            return []
+        }
+    }
 }
