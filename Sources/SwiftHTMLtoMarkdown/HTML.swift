@@ -49,5 +49,7 @@ public extension HTML {
         try convertNode(body)
 
         return markdown
+            .replacingOccurrences(of: "&nbsp;", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
