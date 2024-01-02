@@ -110,6 +110,17 @@ public class BasicHTML: HTML {
                 markdown += "\n```"
                 return
             }
+        } else if node.nodeName() == "ul" || node.nodeName() == "ol" {
+            // Add support for lists
+            let listItemTag = node.nodeName() == "ul" ? "*" : "1."
+            for child in node.getChildNodes() where child.nodeName() == "li" {
+                markdown += "\n\(listItemTag) "
+                for node in child.getChildNodes() {
+                    try convertNode(node)
+                }
+            }
+            markdown += "\n"
+            return
         }
 
         if node.nodeName() == "#text" && node.description != " " {
