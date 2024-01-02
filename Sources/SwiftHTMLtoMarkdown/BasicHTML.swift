@@ -37,16 +37,20 @@ public class BasicHTML: HTML {
             
             return
         } else if node.nodeName() == "p" {
-            if hasSpacedParagraph {
-                markdown += "\n\n"
-            } else {
-                hasSpacedParagraph = true
+            if !markdown.isEmpty { // Ignore anything at the beginning of the document
+                if hasSpacedParagraph {
+                    markdown += "\n\n"
+                } else {
+                    hasSpacedParagraph = true
+                }
             }
         } else if node.nodeName() == "br" {
-            if hasSpacedParagraph {
-                markdown += "\n"
-            } else {
-                hasSpacedParagraph = true
+            if !markdown.isEmpty { // Ignore anything at the beginning of the document
+                if hasSpacedParagraph {
+                    markdown += "\n"
+                } else {
+                    hasSpacedParagraph = true
+                }
             }
         } else if node.nodeName() == "a" {
             markdown += "["
