@@ -48,8 +48,24 @@ public extension HTML {
         }
         try convertNode(body)
 
-        return markdown
-            .replacingOccurrences(of: "&nbsp;", with: " ")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleanMarkdown(markdown)
     }
+}
+
+fileprivate func cleanMarkdown(_ markdown: String) -> String {
+    var cleanedMarkdown = markdown
+        .replacingOccurrences(of: "&nbsp;", with: " ")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // Regex patterns to identify malformed bold syntax
+    let patterns = [
+        "(?<!\\S)(\\*\\*|__)\\s": "$1", // Remove space after opening bold syntax, not preceded by a non-space
+        "\\s(\\*\\*|__)(?!\\S)": "$1"  // Remove space before closing bold syntax, not followed by a non-space
+    ]
+    
+    patterns.forEach { pattern, replacement in
+        cleanedMarkdown = cleanedMarkdown.replacingOccurrences(of: pattern, with: replacement, options: .regularExpression)
+    }
+    
+    return cleanedMarkdown
 }
