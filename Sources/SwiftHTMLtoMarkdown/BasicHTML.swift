@@ -54,7 +54,9 @@ public class BasicHTML: HTML {
             
             return
         } else if node.nodeName() == "br" {
-            markdown += "  \n"
+            if !markdown.isEmpty { // Ignore anything at the beginning of the document
+                markdown += "  \n"
+            }
         } else if node.nodeName() == "a" {
             markdown += "["
             for child in node.getChildNodes() {
