@@ -55,6 +55,7 @@ public extension HTML {
 fileprivate func cleanMarkdown(_ markdown: String) -> String {
     var cleanedMarkdown = markdown
         .replacingOccurrences(of: "&nbsp;", with: " ")
+        .replacingOccurrences(of: "****", with: " ")
         .trimmingCharacters(in: .whitespacesAndNewlines)
     
     // Regex patterns to identify malformed bold syntax

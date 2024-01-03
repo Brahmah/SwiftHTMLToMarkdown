@@ -45,6 +45,14 @@ public class BasicHTML: HTML {
                     hasSpacedParagraph = true
                 }
             }
+            
+            for node in node.getChildNodes() {
+                try convertNode(node)
+            }
+            
+            markdown += "\n\n"
+            
+            return
         } else if node.nodeName() == "br" {
             if !markdown.isEmpty { // Ignore anything at the beginning of the document
                 if hasSpacedParagraph {
@@ -69,6 +77,13 @@ public class BasicHTML: HTML {
                 try convertNode(child)
             }
             markdown += "**"
+            // Handles situations like:
+            /// <strong><a href="https://" target="_blank" rel="noreferrer noopener">CLICK here</a>&nbsp;</strong>
+            // We still want a space after, just not in the markdown syntax as that's invalid. Instead if we detect a non-breaking space
+            // we append it after the markdown
+            if node.getChildNodes().last?.nodeName() == "#text" && node.getChildNodes().last?.description == "&nbsp;" {
+                markdown += " "
+            }
             return
         } else if node.nodeName() == "em" || node.nodeName() == "i" {
             markdown += "*"
@@ -128,8 +143,22 @@ public class BasicHTML: HTML {
             return
         }
 
-        if node.nodeName() == "#text" && node.description != " " {
-            markdown += node.description
+        if node.nodeName() == "#text" {
+            var result = node.description
+                .replacingOccurrences(of: "&nbsp;", with: " ")
+                .replacingOccurrences(
+                    of: " {2,}",
+                    with: " ",
+                    options: .regularExpression,
+                    range: nil)
+            
+            // We need to trim whitespaces within content if wrapped with certain markdown elements:
+            // eg: **Hello World ** or [Link here ](https://google.com) so we need to know the parent?
+            if ["b", "strong", "em", "i"].contains(node.parent()?.nodeName()) {
+                result = result.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            
+            markdown += result
         }
 
         for node in node.getChildNodes() {
