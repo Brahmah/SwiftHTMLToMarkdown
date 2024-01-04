@@ -87,7 +87,7 @@ public class BasicHTML: HTML {
             return
         } else if node.nodeName() == "oembed" {
             if let href = try? node.attr("url") {
-                markdown += "[\(href)](\(href)"
+                markdown += "[\(href)](\(href))"
             }
             return
         } else if node.nodeName() == "strong" || node.nodeName() == "b" {
