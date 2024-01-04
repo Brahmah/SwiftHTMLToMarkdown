@@ -11,7 +11,25 @@ public class BasicHTML: HTML {
     public required init() {
         rawHTML = "Document not initialized correctly"
     }
-
+    
+    private func convertTableRow(_ row: Element, maxColumns: Int) throws -> String {
+        var markdownRow = "|"
+        let columns = row.children()
+        for cell in row.children() {
+            markdownRow += try convertTableCell(cell) + "|"
+        }
+        // Ensure all rows have the same number of columns
+        if columns.size() < maxColumns {
+            markdownRow += String(repeating: "|", count: maxColumns - columns.size())
+        }
+        return markdownRow + "\n" // Add newline at the end of the row
+    }
+    
+    private func convertTableCell(_ cell: Element) throws -> String {
+        var markdownCell = try cell.text().replacingOccurrences(of: "\n", with: "<br>")
+        return markdownCell
+    }
+    
     /// Converts the given node into valid Markdown by appending it onto the ``MastodonHTML/markdown`` property.
     /// - Parameter node: The node to convert
     public func convertNode(_ node: Node) throws {
@@ -122,9 +140,9 @@ public class BasicHTML: HTML {
 
                 if let codeClass = try? codeNode.attr("class"),
                    let language = codeClass.regex(pattern: #"lang.*-(\w+)"#).first {
-                   //let match = try? #/lang.*-(\w+)/#.firstMatch(in: codeClass) {
+                    // let match = try? #/lang.*-(\w+)/#.firstMatch(in: codeClass) {
                     // match.output.1 is equal to the second capture group.
-                    //let language = match.output.1
+                    // let language = match.output.1
                     markdown += language + "\n"
                 } else {
                     // Add the ending newline that we need to format this correctly.
@@ -147,6 +165,29 @@ public class BasicHTML: HTML {
                 }
             }
             markdown += "\n"
+            return
+        } else if node.nodeName() == "table",
+                  let tableElement = node as? Element,
+                  let tableElementRows = try? tableElement.select("tr") {
+            do {
+                var foundHeader = false
+                // Determine the max number of columns
+                var maxColumns = 0
+                for row in tableElementRows {
+                    maxColumns = max(maxColumns, row.children().size())
+                }
+                
+                for row in tableElementRows {
+                    markdown += try convertTableRow(row, maxColumns: maxColumns)
+                    
+                    // For header row, add separator line in Markdown
+                    if !foundHeader {
+                        foundHeader = true
+                        markdown += "|" + String(repeating: "---|", count: maxColumns) + "\n"
+                    }
+                }
+                markdown += "\n" // Add extra newline after table
+            } catch {}
             return
         }
 
