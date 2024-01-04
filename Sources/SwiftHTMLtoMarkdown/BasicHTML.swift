@@ -92,6 +92,13 @@ public class BasicHTML: HTML {
             }
             markdown += "*"
             return
+        } else if node.nodeName() == "s" {
+            markdown += "~~"
+            for child in node.getChildNodes() {
+                try convertNode(child)
+            }
+            markdown += "~~"
+            return
         } else if node.nodeName() == "code" {
             markdown += "`"
             for child in node.getChildNodes() {
@@ -154,7 +161,7 @@ public class BasicHTML: HTML {
             
             // We need to trim whitespaces within content if wrapped with certain markdown elements:
             // eg: **Hello World ** or [Link here ](https://google.com) so we need to know the parent?
-            if ["b", "strong", "em", "i", "a"].contains(node.parent()?.nodeName()) {
+            if ["b", "strong", "em", "i", "a", "s"].contains(node.parent()?.nodeName()) {
                 result = result.trimmingCharacters(in: .whitespacesAndNewlines)
             }
             
