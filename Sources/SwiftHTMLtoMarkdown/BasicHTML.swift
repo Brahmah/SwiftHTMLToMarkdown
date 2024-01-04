@@ -73,12 +73,16 @@ public class BasicHTML: HTML {
                 try convertNode(child)
             }
             markdown += "**"
-            // Handles situations like:
-            /// <strong><a href="https://" target="_blank" rel="noreferrer noopener">CLICK here</a>&nbsp;</strong>
-            // We still want a space after, just not in the markdown syntax as that's invalid. Instead if we detect a non-breaking space
-            // we append it after the markdown
-            if node.getChildNodes().last?.nodeName() == "#text" && node.getChildNodes().last?.description == "&nbsp;" {
-                markdown += " "
+            
+            // Handle situations with non-breaking spaces after text within strong tags
+            if let lastChild = node.getChildNodes().last {
+                if lastChild.nodeName() == "#text" && lastChild.description == "&nbsp;" {
+                    /// <strong><a href="https://" target="_blank" rel="noreferrer noopener">CLICK here</a>&nbsp;</strong>
+                    markdown += " "
+                } else if let lastChildNode = lastChild.getChildNodes().last, lastChildNode.description.hasSuffix("&nbsp;") {
+                    /// <strong><a href="https://www.worldhope.org.au/">Click here&nbsp;</a></strong>
+                    markdown += " "
+                }
             }
             return
         } else if node.nodeName() == "em" || node.nodeName() == "i" {
@@ -150,7 +154,7 @@ public class BasicHTML: HTML {
             
             // We need to trim whitespaces within content if wrapped with certain markdown elements:
             // eg: **Hello World ** or [Link here ](https://google.com) so we need to know the parent?
-            if ["b", "strong", "em", "i"].contains(node.parent()?.nodeName()) {
+            if ["b", "strong", "em", "i", "a"].contains(node.parent()?.nodeName()) {
                 result = result.trimmingCharacters(in: .whitespacesAndNewlines)
             }
             
